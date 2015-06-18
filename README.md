@@ -1,4 +1,4 @@
-daemonizejs
+#daemonizejs
 ===========
 
 Daemonize is a tool that takes a method and returns a function with a daemon like interface (start, stop, restart).
@@ -28,36 +28,38 @@ You can also specify a function that runs on the restart invocation once the dae
 	daemon2.start();
 	daemon2.restart(); // stops testFun, runs reinit, then starts testFun again
 
-Number of runs
 --------------
-It is possible to control the number of times the daemonized function runs (rather than running it infinitely, as is the default)
+##Number of runs
+--------------
+It is possible to control the number of times the daemonized function runs (rather than running it infinitely, as is the default).
 
-Run the daemon a given number of times:
+To run the daemon a given number of times:
 
 	daemon.start(10); // causes daemon to run 10 times.
 
-Stopping the daemon sets the number of times it will run back to 0.
+- stopping the daemon sets the number of times it will run back to 0.
 
-Set daemon to run a given number of additional times, on top of the # of times it's already been set to run. 
+To set a running daemon up to run a given number of additional times, on top of the # of runs it has remaining:
 
 	daemon.start(10);
 		// ...then later in the code, after daemon has run twice: //
 	daemon.addRepeats(4); 	//daemon will now run a total of 12 more times
 
------------------
-daemon.addRepeats(numRepeatsToAdd, doRunImmediately)
------------------
-Set a stopped daemon up to run a certain number of times when eventually started:
 
-or set it up to immediately start and run the given number of times:
+Set a stopped daemon up to run a certain number of times when eventually started, without starting it:
+
 	daemon.stop();
 	daemon.addRepeats(4);
+	daemon.restart();	// daemon will run 4 times
+
+	
+Set a stopped daemon up to accumulate the number of times it will run when eventually started:
+
+	daemon.stop();
+	daemon.addRepeats(2);
 	daemon.addRepeats(3);
-	daemon.restart(); //daemon will now run the function 7 times
+	daemon.restart(); //daemon will run 5 times
 
-- if
-			      // e.g. if  
+Increase the number of additional times the daemon will run the function if, and start it if it's currently stopped:
 
-	daemon.addRepeats(someNumber); //If the function is not infinitely looping, will add 'someNumber' of 
-				       // repeats to the number of times the function will run.
-
+	daemon.addRepeats(5, true); //If stopped, start it & run 5 times; if started, add 5 to # of runs left.
