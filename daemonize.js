@@ -34,29 +34,39 @@ var daemonize = function ( method, period, reinitializer ) {
 		 */
 		start: function( numRuns ) {
 			var me = this;
+			
+			if (typeof moreRepeats === 'number' && moreRepeats < 0) {
+				numRuns = numRuns + moreRepeats;
+				moreRepeats = 0;
+				numRuns = (numRuns < 0) ? 0 : numRuns;
+		        }
+
 			if ( keepRunning ) {
 				postStop = null;
 				method();
+				
         	        	if (typeof numRuns === 'undefined' || typeof numRuns != 'number') {
     					delayedFunction = setTimeout( me['start'].bind(me), period);
+    					
 				} else if (typeof numRuns === 'number') {
+					
                         		if ( numRuns > 1 ) {
-                        			delayedFunction = setTimeout( me['start'].bind( me, (--numRuns) ), 
-                            							period );
+                        			delayedFunction = setTimeout(me['start'].bind( me, (--numRuns) ), period );
+                        				
 					} else {
 						if (moreRepeats > 0) {
 							var repeats = moreRepeats;
-							moreRepeats = me.moreRepeats = 0;
-							delayedFunction = setTimeout( me['start'].bind( me, repeats ), 
-													period );
+							moreRepeats = 0;
+							delayedFunction = setTimeout( me['start'].bind( me, repeats ), period );
 						} else {
 							keepRunning = false;
 							return true;
 						}
 					}
 				}
-			} else {
-				if ( postStop ) setTimeout( postStop(), period );
+
+			} else if ( postStop ) {
+				setTimeout( postStop(), period );
 			}
 		},
 
@@ -74,10 +84,16 @@ var daemonize = function ( method, period, reinitializer ) {
 		 */
 		restart: function ( numRuns ) {
 			var me = this;
+			
 			if ( !keepRunning ) {
 				keepRunning = true;
-				if ( numRuns && typeof numRuns === "number" ) me.start( numRuns )
-				else me.start();
+				
+				if ( typeof numRuns !== 'undefined' && typeof numRuns === "number" ) {
+					me.start(numRuns);
+				} else {
+					me.start();
+				}
+				
 			} else {
 				postStop = function () {
 					reinitializer();
@@ -100,10 +116,14 @@ var daemonize = function ( method, period, reinitializer ) {
 		 */
 		addRepeats: function(numToAdd, doRunImmediately) {
 			var me = this, 
-			newNum;
-			moreRepeats = me.moreRepeats = moreRepeats + numToAdd;
-			if (keepRunning === false) {
-				if (doRunImmediately !== "undefined" && doRunImmediately === true) {
+			    newNum;
+			if ( typeof moreRepeats !== "undefined" && typeof moreRepeats === "number" ) {
+				moreRepeats = moreRepeats + numToAdd;
+			} else {
+				moreRepeats = numToAdd;
+			}
+			if ( keepRunning === false ) {
+				if ( doRunImmediately !== "undefined" && doRunImmediately === true ) {
 					newNum = moreRepeats;
 					moreRepeats = me.moreRepeats = 0;
 					keepRunning = true;
