@@ -1,5 +1,4 @@
 #daemonizejs
-===========
 
 Daemonize is a tool that takes a method and returns a function with a daemon like interface (start, stop, restart).
 
